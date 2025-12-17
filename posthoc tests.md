@@ -1,224 +1,117 @@
-POST-HOC TESTS & ASSUMPTION CHECKS FOR ANOVAs (By Hand)
-🏋️‍♂️ SCENARIO
+# One-Way ANOVA and Post Hoc Tests: Weightlifting Example
 
-You tested 3 different pre-workout supplements (A, B, C) on squat max increase (kg) after 8 weeks.
-You did a one-way ANOVA by hand (good job).
-Results:
-Group	n	Mean increase (kg)	Variance
-A	5	12.4	4.3
-B	5	15.2	5.1
-C	5	9.8	3.8
+This guide explains how to perform a one-way ANOVA by hand, followed by post hoc tests (Fisher's LSD, Scheffé, Tukey, and Bonferroni) if the ANOVA is significant. We'll use a theme of weightlifting in kg. Imagine we have three groups of weightlifters (n=5 per group) using different training programs: Group A (basic strength), Group B (powerlifting focus), and Group C (Olympic lifting focus). The data represents maximum squat lifts in kg.
 
-ANOVA results:
+## Sample Data
 
-    MSbetween=58.0MSbetween​=58.0
+- Group A: 100, 105, 110, 115, 120  
+- Group B: 110, 115, 120, 125, 130  
+- Group C: 120, 125, 130, 135, 140  
 
-    MSwithin=4.4MSwithin​=4.4 (this is MSerrorMSerror​)
+Group means:  
+- Mean_A = (100 + 105 + 110 + 115 + 120) / 5 = 550 / 5 = 110 kg  
+- Mean_B = (110 + 115 + 120 + 125 + 130) / 5 = 600 / 5 = 120 kg  
+- Mean_C = (120 + 125 + 130 + 135 + 140) / 5 = 650 / 5 = 130 kg  
 
-    F=13.18F=13.18, Fcrit(2,12)=3.89Fcrit​(2,12)=3.89 → SIGNIFICANT
+Grand mean (overall mean):  
+Total sum = 550 + 600 + 650 = 1800  
+Grand mean = 1800 / 15 = 120 kg  
 
-    dferror=12dferror​=12, total N = 15
+## Step 1: Perform One-Way ANOVA by Hand
 
-Now we spot the differences.
-🥊 POST-HOC TEST 1: TUKEY'S HSD (THE ALL-ROUNDER)
+ANOVA tests if there's a significant difference between group means. Formulas:  
 
-When: All pairwise comparisons, equal sample sizes.
+- Total Sum of Squares (SST) = sum of (each value - grand mean)^2 for all data  
+- Between-Groups Sum of Squares (SSB) = sum of n_i * (mean_i - grand mean)^2 for each group  
+- Within-Groups Sum of Squares (SSW) = SST - SSB (or sum of (each value - group mean)^2 per group)  
+- Degrees of Freedom: df_between = k - 1 (k=groups=3, so 2), df_within = N - k (N=15, so 12), df_total = N - 1 = 14  
+- Mean Square Between (MSB) = SSB / df_between  
+- Mean Square Within (MSW) = SSW / df_within (this is the error variance)  
+- F-statistic = MSB / MSW  
+- Compare F to critical F from table (e.g., for alpha=0.05, df=2,12, critical F≈3.89)  
 
-Step-by-step:
+### Calculations
 
-    Get the q-value from Studentized Range Table
+First, SSB:  
+- Group A: 5 * (110 - 120)^2 = 5 * (-10)^2 = 5 * 100 = 500  
+- Group B: 5 * (120 - 120)^2 = 5 * 0 = 0  
+- Group C: 5 * (130 - 120)^2 = 5 * 10^2 = 5 * 100 = 500  
+- SSB = 500 + 0 + 500 = 1000  
 
-        k=3k=3 groups, dferror=12dferror​=12, α=0.05α=0.05
+Now, SSW (within each group):  
+- Group A: (100-110)^2 + (105-110)^2 + (110-110)^2 + (115-110)^2 + (120-110)^2 = 100 + 25 + 0 + 25 + 100 = 250  
+- Group B: (110-120)^2 + (115-120)^2 + (120-120)^2 + (125-120)^2 + (130-120)^2 = 100 + 25 + 0 + 25 + 100 = 250  
+- Group C: (120-130)^2 + (125-130)^2 + (130-130)^2 + (135-130)^2 + (140-130)^2 = 100 + 25 + 0 + 25 + 100 = 250  
+- SSW = 250 + 250 + 250 = 750  
 
-        Table gives q=3.77q=3.77
+SST = SSB + SSW = 1000 + 750 = 1750 (verify: sum of all (x - 120)^2 = same)  
 
-    Formula:
+MSB = 1000 / 2 = 500  
+MSW = 750 / 12 = 62.5  
+F = 500 / 62.5 = 8  
 
-HSD=q×MSerrorn
-HSD=q×nMSerror​​
-​
-HSD=3.77×4.45
-HSD=3.77×54.4​
-​
-HSD=3.77×0.88=3.77×0.938=3.54
-HSD=3.77×0.88
-​=3.77×0.938=3.54
+Critical F (alpha=0.05, df=2,12) ≈ 3.89. Since 8 > 3.89, ANOVA is significant. Proceed to post hoc tests to compare pairs: A vs B, A vs C, B vs C.
 
-    Compare mean differences:
+Assume equal n=5 per group, alpha=0.05 for all tests.
 
-Pair	Difference	> 3.54?	Significant?
-B vs A	15.2-12.4=2.8	No	✗
-B vs C	15.2-9.8=5.4	Yes	✓
-A vs C	12.4-9.8=2.6	No	✗
+## Step 2: Fisher's Least Significant Difference (LSD)
 
-Conclusion: Only B vs C is significantly different.
-🥊 POST-HOC TEST 2: BONFERRONI (THE CONSERVATIVE LIFTER)
+LSD uses t-tests with pooled error from ANOVA. For each pair:  
 
-When: Fewer comparisons, or you want to be extra safe.
+- Difference = |mean_i - mean_j|  
+- LSD threshold = t * sqrt(MSW * (1/n_i + 1/n_j))  
+  - t from t-table (two-tailed, alpha=0.05, df=df_within=12) ≈ 2.179  
+  - Here, sqrt(62.5 * (1/5 + 1/5)) = sqrt(62.5 * 0.4) = sqrt(25) = 5  
+  - LSD = 2.179 * 5 ≈ 10.895  
 
-Step-by-step:
+Compare:  
+- A vs B: |110-120| = 10 < 10.895 → not significant  
+- A vs C: |110-130| = 20 > 10.895 → significant  
+- B vs C: |120-130| = 10 < 10.895 → not significant  
 
-    Number of comparisons:
+## Step 3: Scheffé's Test
 
-m=k(k−1)2=3×22=3
-m=2k(k−1)​=23×2​=3
+More conservative for all contrasts. Threshold:  
 
-    New alpha per comparison:
+- Scheffé critical value = sqrt( (k-1) * F_critical * MSW * (1/n_i + 1/n_j) )  
+  - F_critical (alpha=0.05, df=2,12) ≈ 3.89  
+  - (k-1)=2  
+  - sqrt(2 * 3.89 * 62.5 * 0.4) = sqrt(7.78 * 25) = sqrt(194.5) ≈ 13.946  
 
-αnew=0.053=0.0167
-αnew​=30.05​=0.0167
+Compare differences to 13.946:  
+- A vs B: 10 < 13.946 → not significant  
+- A vs C: 20 > 13.946 → significant  
+- B vs C: 10 < 13.946 → not significant  
 
-    Do t-test for each pair:
+## Step 4: Tukey's Honestly Significant Difference (HSD)
 
-    t formula:
+Uses studentized range statistic (Q). For equal n:  
 
-t=Xˉi−XˉjMSerror(1ni+1nj)
-t=MSerror​(ni​1​+nj​1​)
-​Xˉi​−Xˉj​​
+- HSD = Q * sqrt(MSW / n)  
+  - Q from Q-table (alpha=0.05, k=3, df_within=12) ≈ 3.77  
+  - sqrt(62.5 / 5) = sqrt(12.5) ≈ 3.536  
+  - HSD = 3.77 * 3.536 ≈ 13.33  
 
-For B vs C:
-t=15.2−9.84.4(15+15)=5.44.4×0.4
-t=4.4(51​+51​)
-​15.2−9.8​=4.4×0.4
-​5.4​
-t=5.41.76=5.41.326=4.07
-t=1.76
-​5.4​=1.3265.4​=4.07
+Compare differences to 13.33:  
+- A vs B: 10 < 13.33 → not significant  
+- A vs C: 20 > 13.33 → significant  
+- B vs C: 10 < 13.33 → not significant  
 
-    Critical t from t-table:
-    df=12df=12, two-tailed, α=0.0167α=0.0167 → look up α/2=0.0083α/2=0.0083 in tail.
-    Approx tcrit≈2.78tcrit​≈2.78 (exact needs interpolation).
+## Step 5: Bonferroni Correction
 
-    Compare: ∣t∣>tcrit∣t∣>tcrit​ → significant.
+Perform multiple t-tests, adjust alpha = 0.05 / m (m=number of pairs=3, so alpha=0.0167).  
 
-Pair	t	> 2.78?	Significant?
-B vs C	4.07	Yes	✓
-B vs A	2.11	No	✗
-A vs C	1.96	No	✗
+For each pair: t = (mean_i - mean_j) / sqrt(MSW * (1/n_i + 1/n_j))  
+- Standard error = sqrt(62.5 * 0.4) = 5  
+- Critical t (two-tailed, alpha=0.0167, df=12) ≈ 2.68 (interpolate from t-table)  
 
-Same result as Tukey here.
-🥊 POST-HOC TEST 3: SCHEFFÉ (THE OVERKILL)
+- Threshold difference = 2.68 * 5 ≈ 13.4  
 
-When: Any contrasts, including complex ones.
+Or compute t for each:  
+- A vs B: t = 10 / 5 = 2 < 2.68 → not significant  
+- A vs C: t = 20 / 5 = 4 > 2.68 → significant  
+- B vs C: t = 10 / 5 = 2 < 2.68 → not significant  
 
-Step-by-step:
+## Summary
 
-    Get F critical for original ANOVA:
-    Fcrit(2,12)=3.89Fcrit​(2,12)=3.89
-
-    Formula for any pairwise comparison:
-
-S=(k−1)×Fcrit×MSerror×(1ni+1nj)
-S=(k−1)×Fcrit​×MSerror​×(ni​1​+nj​1​)
-​
-
-For B vs C:
-S=2×3.89×4.4×0.4
-S=2×3.89×4.4×0.4
-​
-S=2×3.89×1.76=13.6928=3.70
-S=2×3.89×1.76
-​=13.6928
-​=3.70
-
-    Compare mean difference to S:
-
-        B vs C difference = 5.4 > 3.70 → ✓ significant
-
-        Others less than 3.70 → ✗ not significant
-
-Most conservative, still finds B vs C different here.
-🥊 POST-HOC TEST 4: FISHER'S LSD (THE AGGRESSIVE LIFTER)
-
-When: Only after significant F, equal n, exploratory.
-
-Step-by-step:
-
-    Get t critical for original dferrordferror​ at α=0.05α=0.05:
-    tcrit(12)=2.179tcrit​(12)=2.179 (two-tailed)
-
-    LSD formula:
-
-LSD=tcrit×MSerror(1ni+1nj)
-LSD=tcrit​×MSerror​(ni​1​+nj​1​)
-​
-LSD=2.179×4.4×0.4=2.179×1.76=2.179×1.326=2.89
-LSD=2.179×4.4×0.4
-​=2.179×1.76
-​=2.179×1.326=2.89
-
-    Compare mean differences:
-
-        B vs C: 5.4 > 2.89 → ✓
-
-        B vs A: 2.8 > 2.89? NO → ✗ (barely misses!)
-
-        A vs C: 2.6 < 2.89 → ✗
-
-Fisher's LSD is least conservative, but here still only B vs C significant.
-📊 ASSUMPTION CHECKS (THE WARM-UP)
-1. Normality of Residuals
-
-What to do:
-
-    List all 15 residuals (actual score minus group mean)
-
-    Sort them smallest to largest
-
-    Get normal scores from table (or roughly: z=Φ−1((rank−0.375)/(N+0.25))z=Φ−1((rank−0.375)/(N+0.25)) )
-
-    Plot residuals vs normal scores → if straight line, good.
-
-Quick check:
-
-    Find max residual = ?
-
-    If data roughly symmetric, median residual near 0.
-
-2. Homogeneity of Variance
-
-Levene’s Test by hand:
-
-    Compute median for each group
-
-    New variable: d=∣score−group median∣d=∣score−group median∣
-
-    Run one-way ANOVA on d:
-
-        If F not significant → variances equal
-
-        Our example: variances (4.3, 5.1, 3.8) close, likely OK.
-
-Rule of thumb: largest variance ≤ 4× smallest variance → OK.
-Here: 5.1 / 3.8 = 1.34 → fine.
-3. Independence
-
-    Data collected independently? (different lifters per group)
-
-    No repeated measures → OK.
-
-🎯 SUMMARY TABLE FOR OUR DATA
-Post-hoc test	Critical value	B vs A	B vs C	A vs C
-Tukey HSD	3.54	✗	✓	✗
-Bonferroni	t ≈ 2.78	✗	✓	✗
-Scheffé	3.70	✗	✓	✗
-Fisher’s LSD	2.89	✗	✓	✗
-
-Conclusion for coach: Only Supplement B beats C in squat gains. A is intermediate.
-📌 CHEAT SHEET
-
-    ANOVA significant? → proceed.
-
-    Equal n? → Use Tukey for all pairs, Fisher if exploratory.
-
-    Unequal n? → Use Bonferroni or Scheffé.
-
-    Conservative? → Scheffé or Bonferroni.
-
-    Check assumptions:
-
-        Normality: Q-Q plot of residuals
-
-        Equal variance: Levene’s test (ANOVA on absolute deviations from median)
-
-        Independence: Design-based.
+In this weightlifting example, all tests agree: Group A differs significantly from Group C, but not from B, and B not from C. LSD is least conservative (smaller threshold), Scheffé most conservative (largest). Use based on experiment needs. For unequal n or more groups, adjust formulas accordingly. Critical values from statistical tables (not provided here; look up in a stats book).
