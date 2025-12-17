@@ -115,3 +115,7 @@ Or compute t for each:
 ## Summary
 
 In this weightlifting example, all tests agree: Group A differs significantly from Group C, but not from B, and B not from C. LSD is least conservative (smaller threshold), Scheffé most conservative (largest). Use based on experiment needs. For unequal n or more groups, adjust formulas accordingly. Critical values from statistical tables (not provided here; look up in a stats book).
+
+Last Updated: December 2025
+License: The Evil Math Cat
+Contributions: Gimme me cat food damn it.
